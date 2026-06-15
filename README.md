@@ -1,31 +1,48 @@
 # Respaid / AgentCollect — Hiring Challenge
 
-Welcome. This challenge is **language-agnostic** and **plan-first**. We are not testing whether you know our stack (Laravel + React). We are testing **how you think**: do you plan and ask high-value questions before you build, or do you dive straight into code?
+Welcome. This challenge is **language-agnostic** and **plan-first**. We are not testing whether you know
+our stack (Laravel + React). We are testing **how you think**: do you plan and ask high-value questions
+before you build, and can you reach a result an off-the-shelf tool can't?
 
-> **Use AI tools.** Claude Code, Cursor, Copilot — we expect and want it. We evaluate how you *direct* AI, not whether you use it.
+> **Use AI tools.** Claude Code, Cursor, Copilot — we expect and want it. We evaluate how you *direct* AI,
+> not whether you use it.
 
-## Start here → the Contact Finder challenge
+## Two rounds
 
-Everything is in [`challenge/PROBLEM.md`](challenge/PROBLEM.md). It has two **gated** stages:
+This is a **two-round funnel.** Do Round 1 first; Round 2 is released only to candidates who clear it.
 
-1. **Stage A — PLAN ONLY** (~20 min): commit a `PLAN.md` (architecture, sources, confidence/provenance/"cannot-verify", privacy, and clarifying questions) **before** you read the clarifications or write solution code. Template: [`challenge/PLAN.template.md`](challenge/PLAN.template.md).
-2. **Stage B — CLARIFY + BUILD**: read [`challenge/CLARIFICATIONS.md`](challenge/CLARIFICATIONS.md), then build a minimal slice against the **mocked providers** in [`challenge/mocks/`](challenge/mocks/). No real scraping.
+### Round 1 — Find the contact nobody else can find (start here)
+Everything is in **[`challenge/PROBLEM.md`](challenge/PROBLEM.md)**. You get **5 hand-picked HARD debtor
+rows** ([`challenge/data/hard_cases.csv`](challenge/data/hard_cases.csv)) — tiny companies, no web
+presence, name collisions, registration codes. For each, find the best reachable contact **and prove it**.
+**One impossible row solved and proven beats five easy guesses.** Plan-first (commit `PLAN.md` before any
+code), passive verification only, and a required "what I tried that was clever" page where every claimed
+trick carries proof.
 
-Dataset: [`challenge/data/companies.csv`](challenge/data/companies.csv).
+### Round 2 — Catch the bug before the user reports it (released after Round 1)
+[`challenge/ROUND2-PROBLEM.md`](challenge/ROUND2-PROBLEM.md). Design a system that flags broken UX from
+session replays before a user complains. Don't open it until we give you the go-ahead.
 
 ## How to submit
-- Your own repo (private is fine — add `wwwidr` as a collaborator), with `PLAN.md` committed **first** (git timestamps are part of the signal), then your slice.
-- **REQUIRED — a 2-3 minute screen recording** (Loom or similar, no webcam needed) showing you STARTING a fresh task from your very first click: *"find 10 companies that would want AgentCollect and why."* Talk through what you do as you go, and say in one line what AgentCollect does. We watch HOW you start, not the finished result. No video = we can't book a live conversation.
-- Also nice: a clean commit timeline (git timestamps are part of the signal).
+- Your own repo (private is fine — add **`johnbanr`** as a collaborator), with `PLAN.md` committed
+  **first** (git timestamps are part of the signal), then your slice + the 5 enriched rows + the
+  clever-tricks page + `ABOUT.md`.
+- **Do not squash or rewrite commits** before submitting — we read the commit timeline.
+- Process evidence: a clean commit timeline **or** a screen recording — your choice, async, no webcam.
 - An `ABOUT.md` at the repo root — template: [`ABOUT.template.md`](ABOUT.template.md).
 
 ## How we score
-See the rubric in [`challenge/PROBLEM.md`](challenge/PROBLEM.md#how-we-score-so-there-are-no-surprises). In short: plan & judgment 35%, clarifying questions 10%, adaptation 15%, slice 15%, AI-tool direction 15%, communication 10%. **Hard reject** if you dove into code with no plan, or faked precise contacts with no confidence/provenance handling.
+See the rubric in [`challenge/PROBLEM.md`](challenge/PROBLEM.md#how-we-score). In short: **reasoning**
+(resolve the real entity, refuse the surface, go to the source of truth) and **creativity** are the top
+axes; sharp clarifying questions are high; no hallucinated contacts, debtor-not-creditor, and a
+**generalizing** (not hardcoded) approach are hard gates.
 
 ## Conventions
-[`CLAUDE.md`](CLAUDE.md) shows how we work. You don't need to follow our Laravel conventions for this language-agnostic challenge, but skim it — how we think about conventions matters.
+[`CLAUDE.md`](CLAUDE.md) shows how we work. You don't need to follow our Laravel conventions for this
+language-agnostic challenge, but skim it — how we think about conventions matters.
 
 ---
 
 ### Legacy (optional, ignore unless asked)
-The `tickets/` folder + the Laravel sandbox app are from our previous stack-specific challenge. The Contact Finder above is the current challenge. Do not do both.
+The `tickets/` folder + the Laravel sandbox app are from a previous stack-specific challenge. The two-round
+funnel above is the current challenge. Do not do the legacy tickets.
