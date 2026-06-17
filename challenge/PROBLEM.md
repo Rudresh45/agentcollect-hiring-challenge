@@ -117,8 +117,11 @@ verify). Questions are encouraged; if no one answers in time, state your assumpt
 3. **The "what I tried that was clever" page** (above).
 4. **`ABOUT.md`** at the repo root — template: [`../ABOUT.template.md`](../ABOUT.template.md).
 5. `PLAN.md` committed **first**. **Do not squash or rewrite commits** before submitting — we read the
-   commit timeline. Process evidence: a clean commit timeline **or** a screen recording — your choice,
-   async, no webcam.
+   commit timeline.
+6. **The "how you START" recording (≤20 min) or written `PLAN.md` walkthrough** — see the *First gate*
+   in the [README](../README.md#first-gate--show-how-you-start). Required and reviewed first: show a
+   planning-first start before coding. Silent+captions or a written walkthrough are accepted; no judgment
+   on accent/delivery/setup.
 
 ## How to submit
 Your own repo (private is fine — add **`johnbanr`** as a collaborator), `PLAN.md` committed first, then
