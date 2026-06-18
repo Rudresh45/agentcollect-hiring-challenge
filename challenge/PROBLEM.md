@@ -1,68 +1,143 @@
-# Challenge: Contact Finder (plan-first, two stages)
+# Round 1 — Find the contact nobody else can find (plan-first, ~2h)
 
-This challenge is **language-agnostic**. Use any language, any stack, any AI tools (Claude Code, Cursor, Copilot — we expect and want it). We are not testing whether you know our stack. We are testing **how you think**: do you plan and ask high-value questions before you build, or do you dive straight into code?
+This challenge is **language-agnostic**. Use any language, any stack, any AI tools (Claude Code, Cursor,
+Copilot — we expect and want it). We are not testing whether you know our stack. We are testing **how you
+think**: do you plan and ask high-value questions before you build, and can you reach a contact that an
+off-the-shelf tool can't?
 
-There are two stages and they are **gated**. Do Stage A before you look at Stage B.
-
----
-
-## The problem
-
-One of our enterprise clients (a global logistics company) just onboarded ~1,000 unpaid small-business accounts. For every account we have **only**:
-
-- `company_name`
-- `mailing_address`
-
-No owner name, no email, no phone. We need to reach the **right decision-maker** (owner, CFO, AP manager, office manager) to drive payment. A sample dataset is in [`data/companies.csv`](data/companies.csv).
-
-A single source will never cut it, and not every contact can be found. How you handle "I cannot verify this" matters as much as the ones you find.
+> This is **Round 1 of 2**. Round 2 is released only to candidates who clear Round 1. Do Round 1 well.
 
 ---
 
-## STAGE A — PLAN ONLY (do this first, ~20 minutes)
+## What we do
 
-**Write `PLAN.md` and commit it BEFORE you read `CLARIFICATIONS.md` or write any solution code.** Use the template in [`PLAN.template.md`](../PLAN.template.md). The git timestamp on this commit is part of how we read your process, so commit it on its own.
+We collect overdue invoices for our clients. Each client hands us a spreadsheet of debtors. To chase a
+payment we need a **reachable, correct contact** at the **debtor** company — ideally the person who
+handles accounts payable, otherwise a usable corporate contact.
 
-Your `PLAN.md` should cover:
+## The task
 
-- **Architecture**: how you'd structure a system that takes the CSV and returns contacts.
-- **Sources & strategy**: what kinds of sources you'd combine and why (you do NOT need real ones for this challenge — see Stage B mocks).
-- **Quality**: how you handle dedupe, **confidence scoring**, **provenance** (every value traceable), **"cannot-verify" states**, false-positive risk.
-- **Privacy / compliance**: what you would and would NOT do.
-- **Clarifying questions**: the questions you'd ask us before building. For **each** question state:
-  1. why it matters,
-  2. your default assumption if we never answer,
-  3. what changes in your design depending on the answer.
+You are given **5 debtor rows** in [`data/hard_cases.csv`](data/hard_cases.csv). For each row, find the
+best reachable contact you can **and give us the evidence to trust or reject it.** The rows are
+**hand-picked to be HARD** — tiny companies, no obvious web presence, ambiguous names that collide with
+many others, registration codes instead of clean names.
 
-Quality beats quantity: **3 sharp questions beat 15 shallow ones.** Do not write solution code in Stage A.
+> **Getting ONE right and proving it beats half-answers on all five.** We care far more about one
+> "impossible" row solved and proven than five easy guesses.
+
+### Read the columns carefully
+- `Company name` often carries a **registration code** (e.g. `DUNS N° …`) or a **legal form** (`LLC`,
+  `Inc`, `PLLC`). That code is often the key to resolving the *real* entity.
+- `Address` is the **debtor's** mailing address. It is your single best disambiguator when a name
+  collides — use it.
+- `Email` is **empty — this is what you find.**
+- `Company issuing the invoice` is **our client — NOT the debtor. Never enrich it.** (The single most
+  common failure is enriching the creditor instead of the debtor.)
+
+### What a strong answer does
+1. **Resolves the real entity** behind a messy name or a registration code — and **proves** it's the
+   right one (e.g. the registry/D&B record's city matches the debtor address), not a same-named company.
+2. **Reaches a contact by an unobvious path** when the obvious one is dead — public business registries,
+   registered-agent records, the company's own site/socials, archived pages. Triangulate across
+   **independent** sources; no single-source guesses.
+3. **Verifies before trusting** (passive only — see rules below). A confident wrong answer is worse than
+   **"no contact found, and here's every path I tried and why each one died."**
+4. **Fails honestly.** We read the dead ends as carefully as the wins.
 
 ---
 
-## STAGE B — CLARIFY + BUILD (the rest of your time)
+## Required — "what I tried that was clever" (≤1 page)
 
-1. Read [`CLARIFICATIONS.md`](CLARIFICATIONS.md) — our answers to the most common questions (target persona, allowed sources, compliance limits, success metric, confidence threshold).
-2. Build a **minimal working slice** against the **mocked providers** in [`mocks/`](mocks/) (read [`mocks/README.md`](mocks/README.md)). **Do not scrape anyone for real** — the mocks give you canned data, including some not-found / low-confidence rows on purpose.
-3. Output, per input row: `contact_name`, `contact_role`, `contact_email_or_phone`, `confidence_score` (0-100, your own logic), `source` (which mock provider(s) it came from), and `needs_human_review` (true when confidence is below the threshold in CLARIFICATIONS.md or you cannot verify).
+List the **2–3 most unconventional things you tried, INCLUDING the ones that failed.** For each: the
+hypothesis, what you ran, what happened, what you learned.
 
-We care that your build **follows your plan** and **adapts** to the clarifications. A small, honest slice that handles "cannot verify" well beats a slick scraper that invents precise-looking but unverifiable contacts.
+> **Every claimed step must carry proof** — the exact query, the URL, a timestamp or screenshot, and one
+> line on why that source links to *this* debtor. **Unproven cleverness scores 0.** We reproduce a random
+> sample of your claimed tricks; a trick that doesn't reproduce scores 0 and flags the whole submission.
+
+This page is where we read your creativity directly. Don't be modest, and don't sanitize the failures.
+
+---
+
+## Verification rules (read carefully — passive only)
+
+**Allowed:** MX / catch-all detection, SMTP existence checks **without sending**, cross-referencing
+public sources, public business-registry and registered-agent lookups, archived pages.
+
+**Forbidden:** sending any email / SMS / web-form / call to a real person; paywalled-PII brokers; anything
+that requires contacting a real person or scraping behind a login.
+
+**Data minimization (required):** return **business-corporate contacts only.** Registered-agent records
+sometimes list a **residential / personal address** (sole-proprietor agents) — do NOT include personal or
+home addresses, personal emails, or any data beyond what's needed to reach the *business*. Don't store
+personal data; delete any scraped data after you finish. If you use an LLM, don't paste personal data
+into a third-party model.
+
+**Acceptable evidence:** public registries (Secretary of State, D&B/DUNS), the company's own
+site/socials, archived pages, search results with a clear link to *this* debtor.
+
+---
+
+## Tooling (use anything — these are just cheap options)
+- Web search: [Serper](https://serper.dev) free tier is plenty; use your own free account.
+- LLM: any provider. Anthropic Claude mirrors our stack; OpenAI / local are fine. Use your own key.
+  (If you'd rather not spend, tell us — free tiers cover this; we can hand finalists a small capped key.)
+- Scraping a public `/contact` or `/about` page is fair game. Paid contact APIs (RocketReach, Hunter) are
+  **not required** — don't spend money; if your design would use one, say where it slots in.
+- **Don't hardcode answers for these 5 rows.** Your approach should generalize to thousands of rows you
+  haven't seen — the rows you'll never see coming are the point.
+
+---
+
+## STAGE A — PLAN ONLY (do this first, ~20 min)
+
+**Commit `PLAN.md` BEFORE you write any solution code.** Use [`PLAN.template.md`](../PLAN.template.md).
+The git timestamp on this commit is part of how we read your process — commit it on its own.
+
+Your `PLAN.md` should cover: your resolution **architecture** (row → real entity → verified contact);
+**sources & strategy** and how each fails; **quality** (dedupe, confidence scoring, provenance,
+`cannot-verify` state, false-positive risk); **privacy/compliance**; and your **clarifying questions** —
+for each: (a) why it matters, (b) your default assumption if we never answer, (c) what changes in your
+design depending on the answer. **3 sharp questions beat 15 shallow ones.**
+
+## STAGE B — BUILD (the rest of your time)
+
+Build a minimal working slice that takes the 5 rows and, per row, outputs:
+`contact_name`, `contact_role`, `contact_email_or_phone`, `confidence_score` (0–1, your own explainable
+logic), `source` / evidence (every value traceable), and `needs_human_review` (true when you can't
+verify). Questions are encouraged; if no one answers in time, state your assumptions and proceed.
 
 ---
 
 ## What to submit
+1. **Code** — runnable, with a short README (how to run, what keys it needs).
+2. **The 5 rows enriched** — each found contact with a 0–1 confidence score and the evidence/source. A
+   colored spreadsheet (contact on the row below its source, fill-colored) is ideal; a clearly-labelled
+   CSV/JSONL is an accepted fallback.
+3. **The "what I tried that was clever" page** (above).
+4. **`ABOUT.md`** at the repo root — template: [`../ABOUT.template.md`](../ABOUT.template.md).
+5. `PLAN.md` committed **first**. **Do not squash or rewrite commits** before submitting — we read the
+   commit timeline.
+6. **The "how you START" recording (≤20 min) or written `PLAN.md` walkthrough** — see the *First gate*
+   in the [README](../README.md#first-gate--show-how-you-start). Required and reviewed first: show a
+   planning-first start before coding. Silent+captions or a written walkthrough are accepted; no judgment
+   on accent/delivery/setup.
 
-- Your repo with `PLAN.md` committed first (timestamps visible in git history), then the slice.
-- Process evidence: a screen recording link **or** a clean commit timeline — your choice (async / no webcam required).
-- An `ABOUT.md` at the repo root (see [`../ABOUT.template.md`](../ABOUT.template.md)).
+## How to submit
+Your own repo (private is fine — add **`johnbanr`** as a collaborator), `PLAN.md` committed first, then
+your slice + the 5 enriched rows + the clever-tricks page + `ABOUT.md`.
 
-## How we score (so there are no surprises)
+## How we score
+| Area | Weight | What we look for |
+|---|---|---|
+| **Reasoning** (resolve the real entity; refuse the surface; go to the source of truth) | **Highest** | Did you prove the entity (e.g. registry/D&B city matches the debtor address)? Did you separate same-named companies instead of conflating them? |
+| **Creativity / ingenuity** | **Highest** | Non-obvious, *correct* paths on the hard rows; clever, cheap, passive verification; the proven clever-tricks page |
+| **The right questions** | High | Sharp clarifying questions in PLAN.md, each with why / default / what-changes |
+| **Reliability** | Hard gate | No hallucinated emails; failures explicit and explained |
+| **Debtor targeting** | Hard gate | You enriched the debtor, not the creditor (`Company issuing the invoice`) |
+| **Generalization** | Hard gate | A resolver that scales, not a hardcoded path per company. Enumerating the scenarios = reject. |
+| **Communication** | Medium | Write-up shows you understand your own trade-offs |
 
-| Dimension | Weight |
-|-----------|--------|
-| Plan quality & judgment | 35% |
-| Clarifying questions (decision-value: why / default / what-changes) | 10% |
-| Adaptation (plan → build, did you use the clarifications) | 15% |
-| Implementation of the slice (against mocks) | 15% |
-| AI-tool direction | 15% |
-| Communication / README | 10% |
-
-**Hard reject** (regardless of how good the code is): you committed solution code with no plan/assumptions (dove straight in), or you faked precise contacts with no confidence/provenance/"cannot-verify" handling.
+**Hard reject** regardless of code quality: you enriched the creditor; you faked a precise contact with
+no evidence/`cannot-verify` state; or your approach hardcodes/enumerates the 5 rows instead of
+generalizing.
