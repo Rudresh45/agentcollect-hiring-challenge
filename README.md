@@ -2,61 +2,55 @@
 
 Welcome. This challenge is **language-agnostic** and **plan-first**. We are not testing whether you know
 our stack (Laravel + React). We are testing **how you think**: do you plan and ask high-value questions
-before you build, and can you reach a result an off-the-shelf tool can't?
+before you build, and can you reason about a real, open-ended product problem?
 
 > **Use AI tools.** Claude Code, Cursor, Copilot — we expect and want it. We evaluate how you *direct* AI,
 > not whether you use it.
 
-## First gate — show how you START (required, reviewed first)
+## Step 1 — Plan a real bug hunt, on screen (this IS the application, ~5–20 min)
 
-Before we score anything else, we look at **how you begin the project**. Include a short recording
-(**≤20 min**) of your first 20 minutes:
+This is the only thing you do to apply. **No 2-hour take-home up front.** Record your screen for up to
+**20 minutes** (5 is plenty if you're sharp — no face cam needed) and show us how you'd START:
 
-1. **Plan first, before implementation** — use your tool's planning/plan mode if it has one; if not, plan
-   in writing. The signal is planning-first, not which tool you use.
-2. **Walk through your approach** — what the task really is, what's unknown, and how you'd find out before
-   coding. Thinking aloud beats a polished script.
-3. **Say what you don't know yet** — "I'm not sure, here's how I'd find out" scores higher than a
-   confident wrong guess.
+1. **Open a project in plan mode first** — Claude Code's plan mode, your tool's planning step, or just
+   plan in writing. We want to see you plan before you touch code. Planning-first is the signal, not the
+   tool.
+2. **Plan how you'd automatically catch a UX bug specific to AgentCollect, from our PostHog session
+   replays, before any user reports it.** Context: we run PostHog on our **debtor pages** (payment,
+   dispute) and our **client dashboard** (case management, reports). A "bug" here is rarely a crash — it's
+   a button that does nothing, a control users click 5 times in frustration, a page they abandon. Design
+   for the bugs you *can't* predict, not a checklist.
+3. **Say what you don't know yet** — the unknowns, where you'd get the "expected behaviour" ground truth,
+   which signals you'd start from, and the questions you'd ask us. "I'm not sure, here's how I'd find out"
+   beats a confident wrong guess.
 
-Prefer not to talk on camera? A **silent screen-recording with captions**, or a **written `PLAN.md`
-walkthrough of your start**, is fully accepted — just make your planning-first thinking visible, and tell
-us which format you chose. Keep secrets, customer data, and personal tabs off screen.
+You don't build anything in this step. We're judging **how you start** and **how you reason about a real,
+open-ended product problem** — the thing a strong engineer nails in 5 minutes and a weak one fakes.
 
-We review this first; if it doesn't show planning-first thinking before coding, we won't advance the
-application, regardless of how strong the rest is. (No judgment on accent, delivery, or setup — only on
-whether you frame the problem before solving it.)
+**Format & privacy:** prefer not to narrate aloud? A **silent screen-recording with captions**, or a
+**written `PLAN.md` of your start**, is fully accepted — just make your planning-first thinking visible and
+tell us which you chose. Keep secrets, customer data, and personal tabs off screen. (No judgment on accent,
+delivery, or setup — only on whether you frame the problem before solving it.)
 
-## Two rounds
+## Step 2 — Build it for real (only if your plan clears Step 1)
 
-This is a **two-round funnel.** Do Round 1 first; Round 2 is released only to candidates who clear it.
+If your plan is strong, we hand you **real (masked) session-event traces** and you build the detector you
+just planned. Full spec: **[`challenge/ROUND2-PROBLEM.md`](challenge/ROUND2-PROBLEM.md)** — a runnable
+detector that ingests session traces and flags broken UX (with a severity + the signal that fired + a
+one-line reason), plus a short `ROUND2-PLAN.md`. It must run on traces it hasn't seen, so **no hardcoding**.
 
-### Round 1 — Find the contact nobody else can find (start here)
-Everything is in **[`challenge/PROBLEM.md`](challenge/PROBLEM.md)**. You get **5 hand-picked HARD debtor
-rows** ([`challenge/data/hard_cases.csv`](challenge/data/hard_cases.csv)) — tiny companies, no web
-presence, name collisions, registration codes. For each, find the best reachable contact **and prove it**.
-**One impossible row solved and proven beats five easy guesses.** Plan-first (commit `PLAN.md` before any
-code), passive verification only, and a required "what I tried that was clever" page where every claimed
-trick carries proof.
-
-### Round 2 — Catch the bug before the user reports it (released after Round 1)
-[`challenge/ROUND2-PROBLEM.md`](challenge/ROUND2-PROBLEM.md). Design a system that flags broken UX from
-session replays before a user complains. Don't open it until we give you the go-ahead.
-
-## How to submit
-- Your own repo (private is fine — add **`johnbanr`** as a collaborator), with `PLAN.md` committed
-  **first** (git timestamps are part of the signal), then your slice + the 5 enriched rows + the
-  clever-tricks page + `ABOUT.md`.
-- **Do not squash or rewrite commits** before submitting — we read the commit timeline.
-- **The "how you START" recording/walkthrough from the first gate above** (required, reviewed first).
-- Process evidence for the rest: a clean commit timeline is enough, async, no webcam.
-- An `ABOUT.md` at the repo root — template: [`ABOUT.template.md`](ABOUT.template.md).
+Most applications end at Step 1 — a sharp 5-minute plan is worth more to us than a polished submission that
+never framed the problem.
 
 ## How we score
-See the rubric in [`challenge/PROBLEM.md`](challenge/PROBLEM.md#how-we-score). In short: **reasoning**
-(resolve the real entity, refuse the surface, go to the source of truth) and **creativity** are the top
-axes; sharp clarifying questions are high; no hallucinated contacts, debtor-not-creditor, and a
-**generalizing** (not hardcoded) approach are hard gates.
+- **Reasoning** (à la "is this actually broken, or intended?"): you go after the *expected-behaviour source
+  of truth*, separate the surfaces (debtor pages vs client dashboard vs marketing), and refuse to trust the
+  raw signal alone. **Highest.**
+- **Generalization (hard gate):** a signal model that catches bugs you've never seen (rage/dead clicks,
+  abandon-after-interaction, repeated identical action) — **not** a hardcoded list of known bugs.
+- **The right questions:** sharp clarifying questions, each with why / your default / what changes.
+- **Privacy reflex:** debtor payment/dispute replays are real PII — masking, no raw replay to a third-party
+  LLM, retention limits.
 
 ## Conventions
 [`CLAUDE.md`](CLAUDE.md) shows how we work. You don't need to follow our Laravel conventions for this
@@ -64,6 +58,7 @@ language-agnostic challenge, but skim it — how we think about conventions matt
 
 ---
 
-### Legacy (optional, ignore unless asked)
-The `tickets/` folder + the Laravel sandbox app are from a previous stack-specific challenge. The two-round
-funnel above is the current challenge. Do not do the legacy tickets.
+### Optional / legacy (ignore unless we ask)
+A previous version used a **contact-finder** take-home ([`challenge/PROBLEM.md`](challenge/PROBLEM.md)) and
+a Laravel `tickets/` sandbox. They're kept for reference only — the Step 1 → Step 2 flow above is the
+current challenge. Don't do the legacy tasks unless we point you to them.
