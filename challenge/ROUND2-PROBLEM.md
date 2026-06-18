@@ -1,7 +1,9 @@
-# Round 2 — Catch the bug before the user reports it (plan-first, async, no live call)
+# Step 2 — Build the detector you planned (async, no live call)
 
-> **Round 2 is released to you only after you clear Round 1.** If you're reading this without an explicit
-> go-ahead from us, finish [Round 1](PROBLEM.md) first.
+> **You reach this only after your Step 1 plan clears.** Step 1 is a short screen-recorded *plan* of how
+> you'd catch an AgentCollect UX bug from our PostHog replays (see the [README](../README.md)). If you're
+> reading this without an explicit go-ahead from us, do Step 1 first. This step is where you **build** what
+> you planned.
 
 AgentCollect is AI debt collection. Two communities use our web app:
 - **Debtors** — a payment page and a dispute page.
@@ -10,8 +12,8 @@ AgentCollect is AI debt collection. Two communities use our web app:
 We record every session as a screen replay. Today we only find UX bugs when someone complains — too late.
 
 ## Your task
-Design a system that **flags** broken UX from the replays **before** a user reports it. **Flagging only,
-not fixing.**
+Design and build a system that **flags** broken UX from the replays **before** a user reports it.
+**Flagging only, not fixing.**
 
 Below are **2 illustrative replays** — one with an obvious error, one subtler. **They are NOT
 exhaustive: the real product has bugs you cannot predict in advance.** Don't solve "these two" — design
@@ -37,6 +39,10 @@ an ordered `events` array (`$pageview`, `$autocapture` clicks with element/state
 `$pageleave`, `$exception`, etc.), mirroring the shape PostHog session-replay exports. The two replays
 above (A and B) are among them. The rest are a mix of healthy sessions and other anomalies. **We also hold
 back additional traces you won't see, and we'll run your detector on them.**
+
+> Heads-up on signal availability: in our real data, `$rageclick`, `$pageleave` and `$autocapture` are
+> rich, but `$exception` / `$dead_click` are **not always captured** — so a detector that relies only on
+> `$exception` will miss most real bugs. Design across signals.
 
 ## Deliver
 - A **runnable detector** that ingests `session_traces.jsonl` and outputs, per session: a
