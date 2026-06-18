@@ -31,6 +31,13 @@ delivery, or setup — only on whether you frame the problem before solving it.)
 You don't build anything in Step 1. We're judging **how you start** and **how you reason about a real,
 open-ended product problem** — the thing a strong engineer nails in five minutes and a weak one fakes.
 
+### How to submit (2 links, that's it)
+1. **Your GitHub repo** with `PLAN.md` committed first — add **`johnbanr`** as a collaborator (private is fine).
+2. **Your screen-recording link** (Loom / YouTube-unlisted / Drive — ≤5 min).
+
+Reply to our email with those two links. If you found this repo on your own, email **j@agentcollect.com**
+with the two links. No cover letter, no forms. We reply to every complete submission.
+
 ## Step 2 — Build it for real (only if your plan clears Step 1)
 
 If your plan is strong, we hand you **real (masked) session-event traces** and you build the detector you
