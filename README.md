@@ -1,70 +1,60 @@
-# Respaid / AgentCollect — Hiring Challenge
+# Automated UX Bug Detector — AgentCollect
 
-Welcome. This challenge is **language-agnostic** and **plan-first**. We are not testing whether you know
-our stack (Laravel + React). We are testing **how you think**: do you plan and ask high-value questions
-before you build, and can you reason about a real, open-ended product problem?
-
-> **Use AI tools.** Claude Code, Cursor, Copilot — we expect and want it. We evaluate how you *direct* AI,
-> not whether you use it.
-
-## Step 1 — Plan a real bug hunt (this IS the application, ~5 minutes)
-
-**The whole application is ~5 minutes** (10 max). We believe a strong engineer lays the foundations in
-five. Send us back **two things**:
-
-**A. A GitHub repo** (private is fine — add **`johnbanr`** as a collaborator) containing a **`PLAN.md`
-committed first** (the git timestamp is part of the signal). Your `PLAN.md` plans **how you'd
-automatically catch a UX bug specific to AgentCollect, from our PostHog session replays, before any user
-reports it.** Context: we run PostHog on our **debtor pages** (payment, dispute) and our **client
-dashboard** (case management, reports). A "bug" here is rarely a crash — it's a button that does nothing, a
-control users click 5 times in frustration, a page they abandon. Design for the bugs you *can't* predict,
-not a checklist. Say what you **don't know yet** (the unknowns, where you'd get the "expected behaviour"
-ground truth, which signals you'd start from, the questions you'd ask us).
-
-**B. A short screen recording (≤5 min, 10 max — no face cam)** of how you **START**: open a project in
-**plan mode first** (Claude Code's plan mode, your tool's planning step, or planning in writing) and talk
-(or caption) your way through the plan above. We want to see you **plan before you touch code** — that's
-the whole signal. Prefer not to narrate? Silent + captions, or just the `PLAN.md`, is fully accepted; tell
-us which you chose. Keep secrets, customer data, and personal tabs off screen. (No judgment on accent,
-delivery, or setup — only on whether you frame the problem before solving it.)
-
-You don't build anything in Step 1. We're judging **how you start** and **how you reason about a real,
-open-ended product problem** — the thing a strong engineer nails in five minutes and a weak one fakes.
-
-### How to submit (2 links, that's it)
-1. **Your GitHub repo** with `PLAN.md` committed first — add **`johnbanr`** as a collaborator (private is fine).
-2. **Your screen-recording link** (Loom / YouTube-unlisted / Drive — ≤5 min).
-
-Reply to our email with those two links. If you found this repo on your own, email **j@agentcollect.com**
-with the two links. No cover letter, no forms. We reply to every complete submission.
-
-## Step 2 — Build it for real (only if your plan clears Step 1)
-
-If your plan is strong, we hand you **real (masked) session-event traces** and you build the detector you
-just planned. Full spec: **[`challenge/ROUND2-PROBLEM.md`](challenge/ROUND2-PROBLEM.md)** — a runnable
-detector that flags broken UX (severity + the signal that fired + a one-line reason), plus a short
-`ROUND2-PLAN.md`. It must run on traces it hasn't seen, so **no hardcoding**.
-
-Most applications end at Step 1 — a sharp 5-minute plan is worth more to us than a polished submission that
-never framed the problem.
-
-## How we score
-- **Reasoning** ("is this actually broken, or intended?"): you go after the *expected-behaviour source of
-  truth*, separate the surfaces (debtor pages vs client dashboard vs marketing), and refuse to trust the
-  raw signal alone. **Highest.**
-- **Generalization (hard gate):** a signal model that catches bugs you've never seen (rage/dead clicks,
-  abandon-after-interaction, repeated identical action) — **not** a hardcoded list of known bugs.
-- **The right questions:** sharp clarifying questions, each with why / your default / what changes.
-- **Privacy reflex:** debtor payment/dispute replays are real PII — masking, no raw replay to a third-party
-  LLM, retention limits.
-
-## Conventions
-[`CLAUDE.md`](CLAUDE.md) shows how we work. You don't need to follow our Laravel conventions for this
-language-agnostic challenge, but skim it — how we think about conventions matters.
+This repository contains my solution to the AgentCollect / Respaid Hiring Challenge. It includes a fully functional, zero-dependency Python automated UX Bug Detector that analyzes PostHog session replay logs to flag silent and explicit user experience bugs.
 
 ---
 
-### Optional / legacy (ignore unless we ask)
-A previous version used a **contact-finder** take-home ([`challenge/PROBLEM.md`](challenge/PROBLEM.md)) and
-a Laravel `tickets/` sandbox. They're kept for reference only — the Step 1 → Step 2 flow above is the
-current challenge. Don't do the legacy tasks unless we point you to them.
+## 🚀 How to Run
+
+### Prerequisite
+* Python 3.x (no external libraries are required)
+
+### 1. Execute the Detector
+Run the detector script on a session trace file (JSONL format):
+```bash
+python detector.py challenge/data/session_traces.jsonl
+```
+
+#### Output Schema
+For each session input, the script outputs a single JSON line containing:
+* `session_id`: Unique identifier of the session.
+* `flagged`: Boolean indicating if anomalous UX friction was detected (`true` / `false`).
+* `severity`: Severity classification (`low`, `medium`, `high`, `critical`).
+* `signals`: List of specific trigger signals encountered (e.g. `http_error`, `rage_click`, `unhandled_exception`, `disabled_ui_click`, `funnel_abandonment_after_friction`, `silent_process_freeze`).
+* `reason`: Descriptive explanation detailing the anomalies.
+
+### 2. Run the Unit Test Suite
+To verify the engine correctness and ensure regression safety:
+```bash
+python -m unittest test_detector.py
+```
+
+---
+
+## 🛠️ Architecture and Heuristics
+
+The detector works by evaluating session events chronologically and processing them across three dimensions:
+
+1.  **Explicit Errors:**
+    *   **HTTP Status Triggers (`http_error`):** Flags `$pageview` events returning status code $\ge 400$ (e.g. `404 - Page not found`).
+    *   **Script Exceptions (`unhandled_exception`):** Flags unhandled JS client crashes.
+
+2.  **User Frustration Signals:**
+    *   **Rage Clicks (`rage_click`):** Flags multiple rapid consecutive clicks on identical UI targets (higher severity on actionable targets like buttons/links).
+    *   **Dead Clicks (`dead_click`):** Flags clicks that did not result in standard page loads or transitions.
+
+3.  **Behavioral Funnel Stalls:**
+    *   **Disabled Form Deadlocks (`disabled_ui_click`):** Scans for clicks on buttons with `attrs: {"disabled": true}` followed by abandonment.
+    *   **Debtor Funnel Abandonment (`funnel_abandonment_after_friction`):** Evaluates if a debtor reached advanced steps, scrolled to 100%, but ultimately exited (`converted: false`) after encountering dead ends or disabled components.
+    *   **Silent Process Hangs (`silent_process_freeze`):** Detects when a client initiates a long-running dashboard process (like exports or imports) but exits the session after prolonged idle periods with zero progress.
+
+---
+
+## 📂 Repository Layout
+
+*   [detector.py](file:///c:/Users/Rudresh_N_G/Desktop/challeange/detector.py): Main Python heuristics classification script.
+*   [test_detector.py](file:///c:/Users/Rudresh_N_G/Desktop/challeange/test_detector.py): Automated unit tests covering all edge case patterns.
+*   [PLAN.md](file:///c:/Users/Rudresh_N_G/Desktop/challeange/PLAN.md): Round 1 PostHog detector design plan.
+*   [ROUND2-PLAN.md](file:///c:/Users/Rudresh_N_G/Desktop/challeange/ROUND2-PLAN.md): Round 2 implementation strategy.
+*   [ABOUT.md](file:///c:/Users/Rudresh_N_G/Desktop/challeange/ABOUT.md): Candidate profile and AI engineering patterns.
+*   [challenge/data/session_traces.jsonl](file:///c:/Users/Rudresh_N_G/Desktop/challeange/challenge/data/session_traces.jsonl): Synthetic session logs used for verification.
